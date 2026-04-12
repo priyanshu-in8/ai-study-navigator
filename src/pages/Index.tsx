@@ -1,16 +1,47 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { GreetingHeader } from "@/components/dashboard/GreetingHeader";
+import { StatsCards } from "@/components/dashboard/StatsCards";
+import { StudyPlanCards } from "@/components/dashboard/StudyPlanCards";
+import { PerformanceChart } from "@/components/dashboard/PerformanceChart";
+import { SubjectMastery } from "@/components/dashboard/SubjectMastery";
+import { FocusMode } from "@/components/dashboard/FocusMode";
+import { MoodTracker } from "@/components/dashboard/MoodTracker";
+import { WeakTopicsRadar } from "@/components/dashboard/WeakTopicsRadar";
+import { Leaderboard } from "@/components/dashboard/Leaderboard";
+import { QuickActions } from "@/components/dashboard/QuickActions";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
-    </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-12 flex items-center border-b border-border px-2 lg:hidden">
+            <SidebarTrigger />
+          </header>
+          <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 space-y-6">
+            <GreetingHeader />
+            <StatsCards />
+            <QuickActions />
+            <StudyPlanCards />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <PerformanceChart />
+              <SubjectMastery />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FocusMode />
+              <WeakTopicsRadar />
+              <div className="space-y-4">
+                <MoodTracker />
+                <Leaderboard />
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
