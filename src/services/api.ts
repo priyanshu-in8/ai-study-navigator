@@ -128,12 +128,25 @@ async function request(
         );
 
     /* Protected routes only */
-    if (!response.ok) {
-  throw new Error(
-    data.message ||
-      "Request failed"
-  );
-}
+    if (
+      response.status ===
+        401 &&
+      endpoint !==
+        "/auth/login" &&
+      endpoint !==
+        "/auth/register" &&
+      endpoint !==
+        "/auth/forgot-password" &&
+      endpoint !==
+        "/auth/reset-password"
+    ) {
+      storage.clear();
+      window.location.href =
+        "/auth";
+      throw new Error(
+        "Unauthorized"
+      );
+    }
 
     if (!response.ok) {
       throw new Error(
