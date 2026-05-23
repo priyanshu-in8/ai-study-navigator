@@ -380,7 +380,7 @@ export const aiApi = {
     body: JSON.stringify({
       problem: problem,
       code: code,
-      testCases: testCases,
+      
       language: language
     }),
   });

@@ -260,7 +260,7 @@ type TestCase = {
 
 function CodingSection({ onXpGain }: { onXpGain: (amount: number) => void }) {
   const [topic, setTopic] = useState("");
-  const [language, setLanguage] = useState("python");
+  const [language, setLanguage] = useState("C++");
   const [code, setCode] = useState("# Write your solution here\n");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
@@ -270,6 +270,14 @@ const [testCases, setTestCases] = useState<TestCase[]>([]);
   const { toast } = useToast();
   const [generated, setGenerated] = useState(false);
 
+  ////////run
+
+  const [correct, setCorrect] = useState("");
+  const [summary, setSummary] = useState("")
+
+
+
+
   const handleGenerateCode = async () => {
     if (!code.trim()) return;
     setIsRunning(true);
@@ -277,7 +285,12 @@ const [testCases, setTestCases] = useState<TestCase[]>([]);
       // Simulate API call to run code
       const res =await aiApi.generateCoding(topic, "medium");
       console.log("CODE API:", res);
-      setOutput(res.data?.output || "No output");
+      setCode(res.data?.starterCode);
+      setCode(res.data?.starterCode);
+   
+      
+      
+     
       setTitle(res.data?.title || "Generated Code");
       setDescription(res.data?.description || "No description");
       setTestCases(res.data?.examples|| []);
@@ -378,40 +391,19 @@ const handleRun = async () => {
 
     const evalData = res.data?.data;
 
-    // Build detailed output with test results
-    let detailedOutput = 
-      `Score: ${evalData?.score ?? 0}%\n` +
-      `Passed: ${evalData?.passed ?? 0}/${evalData?.total ?? 0}\n`;
     
-    if (evalData?.summary) {
-      detailedOutput += `\n${evalData.summary}\n`;
-    }
+     setSummary(evalData.summary)
+    console.log(res);
 
-    // Add individual test results
-    if (evalData?.results && Array.isArray(evalData.results)) {
-      detailedOutput += `\n${"=".repeat(50)}\n`;
-      evalData.results.forEach((result: any, idx: number) => {
-        const status = result.passed ? "✅ PASS" : "❌ FAIL";
-        detailedOutput += `\nTest ${idx + 1}: ${status}\n`;
-        detailedOutput += `Input: ${result.input}\n`;
-        detailedOutput += `Expected: ${result.expected}\n`;
-        detailedOutput += `Got: ${result.actual}\n`;
-        if (result.error) {
-          detailedOutput += `Error: ${result.error}\n`;
-        }
-      });
-    }
+  
+    
 
-    // Add suggestions
-    if (evalData?.suggestions && Array.isArray(evalData.suggestions)) {
-      detailedOutput += `\n${"=".repeat(50)}\n`;
-      detailedOutput += `\nSuggestions:\n`;
-      evalData.suggestions.forEach((suggestion: string) => {
-        detailedOutput += `• ${suggestion}\n`;
-      });
-    }
+    // Build detailed output with test results
+    
 
-    setOutput(detailedOutput);
+
+
+ 
 
   } catch (err: any) {
     console.error(err);
@@ -474,7 +466,7 @@ const handleRun = async () => {
           {output && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
               <div className="glass p-4 rounded-xl font-mono text-sm text-muted-foreground max-h-96 overflow-y-auto whitespace-pre-wrap break-words">
-                {output}
+                {summary}
               </div>
               
               {/* Parse and display test results visually */}
