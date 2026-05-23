@@ -23,14 +23,11 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-
   setAuth: (
     token: string,
     user: User
   ) => void;
-
   refreshUser: () => Promise<void>;
-
   signOut: () => Promise<void>;
 }
 
@@ -39,11 +36,8 @@ const AuthContext =
     user: null,
     token: null,
     loading: true,
-
     setAuth: () => {},
-
     refreshUser: async () => {},
-
     signOut: async () => {},
   });
 
@@ -68,20 +62,6 @@ export function AuthProvider({
     restoreSession();
   }, []);
 
-  const clearAuth = () => {
-    localStorage.removeItem(
-      "token"
-    );
-
-    localStorage.removeItem(
-      "user"
-    );
-
-    setUser(null);
-    setToken(null);
-    setLoading(false);
-  };
-
   const restoreSession =
     async () => {
       const storedToken =
@@ -95,62 +75,36 @@ export function AuthProvider({
       }
 
       try {
-        // Render cold start fix
-        let data;
-
-        try {
-          data =
-            await authApi.getProfile();
-        } catch {
-          await new Promise(
-            (resolve) =>
-              setTimeout(
-                resolve,
-                1500
-              )
-          );
-
-          data =
-            await authApi.getProfile();
-        }
-
         setToken(
           storedToken
         );
+
+        const data =
+          await authApi.getProfile();
 
         setUser(
           data.user
         );
       } catch (error) {
-        console.log(
-          "Session restore failed",
-          error
-        );
-
         clearAuth();
       } finally {
         setLoading(false);
       }
     };
 
-  const setAuth = (
-    newToken: string,
-    newUser: User
-  ) => {
-    localStorage.setItem(
-      "token",
-      newToken
-    );
+ const setAuth = (
+  newToken: string,
+  newUser: User
+) => {
+  localStorage.setItem(
+    "token",
+    newToken
+  );
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify(newUser)
-    );
-
-    setToken(newToken);
-    setUser(newUser);
-    setLoading(false);
-  };
+  setToken(newToken);
+  setUser(newUser);
+  setLoading(false);
+};
 
   const refreshUser =
     async () => {
@@ -163,9 +117,19 @@ export function AuthProvider({
         );
       } catch (error) {
         console.log(
-          "Refresh failed"
+          "refresh failed"
         );
       }
+    };
+
+  const clearAuth =
+    () => {
+      localStorage.removeItem(
+        "token"
+      );
+
+      setUser(null);
+      setToken(null);
     };
 
   const signOut =
