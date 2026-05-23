@@ -1,35 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+import { authApi } from "@/services/api";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Mail, ArrowRight, ArrowLeft, Lock } from "lucide-react";
+import { Sparkles, Mail, ArrowRight, ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ResetPassword = () => {
   const [step, setStep] = useState<"request" | "update">("request");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [token, setToken] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Check if we have a recovery token in the URL
-  useState(() => {
-    const hash = window.location.hash;
-    if (hash.includes("type=recovery")) {
+  // Check if we have a reset token in the URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const resetToken = params.get("token");
+    if (resetToken) {
+      setToken(resetToken);
       setStep("update");
     }
-  });
+  }, []);
 
   const handleRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw error;
+      await authApi.forgotPassword(email);
       toast({ title: "Check your email", description: "We sent you a password reset link." });
+      setEmail("");
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error", description: error.message });
     } finally {
@@ -39,12 +42,15 @@ const ResetPassword = () => {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== passwordConfirm) {
+      toast({ variant: "destructive", title: "Error", description: "Passwords do not match" });
+      return;
+    }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      await authApi.resetPassword(token, password, passwordConfirm);
       toast({ title: "Password updated!", description: "You can now sign in with your new password." });
-      navigate("/");
+      navigate("/auth");
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error", description: error.message });
     } finally {
@@ -91,11 +97,40 @@ const ResetPassword = () => {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <input
-                    type="password" placeholder="New password" value={password}
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="New password" 
+                    value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-muted/30 border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary"
-                    required minLength={6}
+                    className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-muted/30 border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary"
+                    required 
+                    minLength={6}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="Confirm password" 
+                    value={passwordConfirm}
+                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-muted/30 border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary"
+                    required 
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
                 <button type="submit" disabled={loading}
                   className="w-full py-2.5 rounded-lg bg-gradient-to-r from-neon-blue to-neon-violet text-primary-foreground text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50">

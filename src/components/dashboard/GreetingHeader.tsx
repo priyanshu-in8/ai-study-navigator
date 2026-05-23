@@ -1,9 +1,16 @@
 import { motion } from "framer-motion";
 import { Flame, Bell, Search } from "lucide-react";
 
-export function GreetingHeader() {
+type GreetingHeaderProps = {
+  dashboard?: any;
+  loading?: boolean;
+};
+
+export function GreetingHeader({ dashboard, loading }: GreetingHeaderProps) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const userName = dashboard?.name || "Priyanshu";
+  const streakDays = dashboard?.streakDays || 0;
 
   return (
     <motion.div
@@ -13,10 +20,10 @@ export function GreetingHeader() {
     >
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          {greeting}, Priyanshu 👋
+          {greeting}, {loading ? "..." : userName} 👋
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Ready to crush your goals today? You're on a <Flame className="inline h-4 w-4 text-neon-orange" /> 7-day streak!
+          Ready to crush your goals today? You're on a <Flame className="inline h-4 w-4 text-neon-orange" /> {streakDays}-day streak!
         </p>
       </div>
       <div className="flex items-center gap-3">

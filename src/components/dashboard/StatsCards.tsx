@@ -1,14 +1,48 @@
 import { motion } from "framer-motion";
 import { Flame, Target, Clock, Zap } from "lucide-react";
 
-const stats = [
-  { label: "Study Streak", value: "7 days", icon: Flame, color: "text-neon-orange", bg: "bg-neon-orange/10" },
-  { label: "XP Earned", value: "2,450", icon: Zap, color: "text-neon-blue", bg: "bg-neon-blue/10" },
-  { label: "Hours Today", value: "3.5h", icon: Clock, color: "text-neon-cyan", bg: "bg-neon-cyan/10" },
-  { label: "Accuracy", value: "84%", icon: Target, color: "text-neon-green", bg: "bg-neon-green/10" },
-];
+type Props = {
+  dashboard: any;
+  accuracyStats: any;
+};
 
-export function StatsCards() {
+export function StatsCards({
+  dashboard,
+  accuracyStats,
+}: Props) {
+  const stats = [
+    {
+      label: "Study Streak",
+      value: `${dashboard?.streakDays ?? 0} days`,
+      icon: Flame,
+      color: "text-neon-orange",
+      bg: "bg-neon-orange/10",
+    },
+    {
+      label: "XP Earned",
+      value: Number(
+        dashboard?.xpPoints ?? 0
+      ).toLocaleString(),
+      icon: Zap,
+      color: "text-neon-blue",
+      bg: "bg-neon-blue/10",
+    },
+    {
+      label: "Hours Today",
+      value: `${dashboard?.hoursToday ?? 0}h`,
+      icon: Clock,
+      color: "text-neon-cyan",
+      bg: "bg-neon-cyan/10",
+    },
+    {
+      label: "Accuracy",
+      value: `${accuracyStats?.overallAccuracy ?? 0}%`,
+      icon: Target,
+      color: "text-neon-green",
+      bg: "bg-neon-green/10",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {stats.map((stat, i) => (
@@ -22,8 +56,14 @@ export function StatsCards() {
           <div className={`${stat.bg} w-8 h-8 rounded-lg flex items-center justify-center mb-2`}>
             <stat.icon className={`h-4 w-4 ${stat.color}`} />
           </div>
-          <p className="text-xl font-bold text-foreground">{stat.value}</p>
-          <p className="text-[11px] text-muted-foreground">{stat.label}</p>
+
+          <p className="text-xl font-bold text-foreground">
+            {stat.value}
+          </p>
+
+          <p className="text-[11px] text-muted-foreground">
+            {stat.label}
+          </p>
         </motion.div>
       ))}
     </div>

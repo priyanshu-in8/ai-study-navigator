@@ -1,52 +1,159 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import type { User, Session } from "@supabase/supabase-js";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+
+import { authApi } from "@/services/api";
+
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  role?: string;
+  xpPoints?: number;
+  level?: number;
+  streakDays?: number;
+  subjects?: string[];
+}
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
+  token: string | null;
   loading: boolean;
+  setAuth: (
+    token: string,
+    user: User
+  ) => void;
+  refreshUser: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  loading: true,
-  signOut: async () => {},
-});
+const AuthContext =
+  createContext<AuthContextType>({
+    user: null,
+    token: null,
+    loading: true,
+    setAuth: () => {},
+    refreshUser: async () => {},
+    signOut: async () => {},
+  });
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () =>
+  useContext(AuthContext);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const [user, setUser] =
+    useState<User | null>(null);
+
+  const [token, setToken] =
+    useState<string | null>(null);
+
+  const [loading, setLoading] =
+    useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    restoreSession();
   }, []);
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
+  const restoreSession =
+    async () => {
+      const storedToken =
+        localStorage.getItem(
+          "token"
+        );
+
+      if (!storedToken) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setToken(
+          storedToken
+        );
+
+        const data =
+          await authApi.getProfile();
+
+        setUser(
+          data.user
+        );
+      } catch (error) {
+        clearAuth();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+ const setAuth = (
+  newToken: string,
+  newUser: User
+) => {
+  localStorage.setItem(
+    "token",
+    newToken
+  );
+
+  setToken(newToken);
+  setUser(newUser);
+  setLoading(false);
+};
+
+  const refreshUser =
+    async () => {
+      try {
+        const data =
+          await authApi.getProfile();
+
+        setUser(
+          data.user
+        );
+      } catch (error) {
+        console.log(
+          "refresh failed"
+        );
+      }
+    };
+
+  const clearAuth =
+    () => {
+      localStorage.removeItem(
+        "token"
+      );
+
+      setUser(null);
+      setToken(null);
+    };
+
+  const signOut =
+    async () => {
+      try {
+        await authApi.logout();
+      } catch (error) {
+        console.log(error);
+      } finally {
+        clearAuth();
+      }
+    };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        setAuth,
+        refreshUser,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

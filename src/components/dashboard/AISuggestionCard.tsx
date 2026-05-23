@@ -1,7 +1,15 @@
 import { motion } from "framer-motion";
 import { Brain, Sparkles, ArrowRight } from "lucide-react";
 
-export function AISuggestionCard() {
+type AISuggestionCardProps = {
+  dashboard?: any;
+};
+
+export function AISuggestionCard({ dashboard }: AISuggestionCardProps) {
+  const weakTopic = dashboard?.weakTopics?.[0];
+  const topic = weakTopic?.topic || "Graphs";
+  const wrongCount = weakTopic?.wrongCount || 1;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -19,8 +27,8 @@ export function AISuggestionCard() {
             <Sparkles className="h-3 w-3 text-neon-violet" />
             <span className="text-[10px] font-semibold uppercase tracking-wider text-neon-violet">AI Insight</span>
           </div>
-          <p className="text-sm font-medium text-foreground">Focus on Graphs today</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Weak topic detected — 42% accuracy in last 3 quizzes</p>
+          <p className="text-sm font-medium text-foreground">Focus on {topic} today</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Weak topic detected — {wrongCount} incorrect answers in recent quizzes</p>
         </div>
         <button className="flex-shrink-0 p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors hover:scale-105 active:scale-95">
           <ArrowRight className="h-4 w-4" />
