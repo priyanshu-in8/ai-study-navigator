@@ -19,7 +19,7 @@ interface Message {
 const initialMessages: Message[] = [
   {
     role: "ai",
-    text: `# 👋 Welcome to AI Tutor
+    text: `# 👋 Welcome to AI Tutor.
 
 Ask me anything about:
 
