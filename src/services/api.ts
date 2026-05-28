@@ -252,6 +252,15 @@ export const authApi = {
         }
       );
     },
+
+  verifyEmail: async (token: string) => {
+  return await request(
+    `/auth/verify-email?token=${token}`,
+    {
+      method: "GET",
+    }
+  );
+},
 };
 
 /* =========================================================

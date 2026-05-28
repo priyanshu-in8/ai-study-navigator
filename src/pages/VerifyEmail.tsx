@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import { authApi } from "@/services/api";
 
 const VerifyEmail = () => {
   const [params] = useSearchParams();
@@ -20,30 +21,16 @@ const VerifyEmail = () => {
 
     const verify = async () => {
       try {
-        const res = await fetch(
-          "/api/auth/verify-email",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              token,
-            }),
-          }
-        );
+        const data = await authApi.verifyEmail(token);
 
-        const data = await res.json();
-
-        setSuccess(data.success);
+        setSuccess(data.success || !!data);
         setMessage(
           data.message ||
             "Email verified successfully."
         );
-      } catch (error) {
+      } catch (error: any) {
         setMessage(
-          "Verification failed."
+          error.message || "Verification failed."
         );
       } finally {
         setLoading(false);
@@ -51,7 +38,7 @@ const VerifyEmail = () => {
     };
 
     verify();
-  }, []);
+  }, [params]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
